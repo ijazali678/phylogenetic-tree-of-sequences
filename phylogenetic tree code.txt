@@ -1,0 +1,77 @@
+import Bio as Bio
+from Bio import SeqIO # for reading and writing sequence files in various formats
+from Bio import AlignIO 
+from Bio import Phylo # for working with phylogenetic trees
+
+s1 = SeqIO.read("sequence1.fasta", "fasta")
+s2 = SeqIO.read("sequence2.fasta", "fasta")
+s3 = SeqIO.read("sequence3.fasta", "fasta")
+s4 = SeqIO.read("sequence4.fasta", "fasta")
+s5 = SeqIO.read("sequence5.fasta", "fasta")
+s6 = SeqIO.read("sequence6.fasta", "fasta")
+
+print(s6.description)
+
+s1.id = 'Angel_Shark'
+s2.id = 'Gray_Reef_Shark'
+s3.id = 'Mako_Shark'
+s4.id = 'Tiger_Shark'
+s5.id = 'Great_White_Shark'
+s6.id = 'Hammerhead_Shark'
+
+
+sharks = SeqIO.write([s1,s2,s3,s4,s5,s6], "sharks.fasta", "fasta") # Write them into one file
+
+
+# Path: sharks.aln 
+# https://www.ebi.ac.uk/Tools/msa/muscle/
+# use it for alignment of the sequences in sharks.aln
+
+with open("sharks.aln","r") as aln: 
+    alignment = AlignIO.read(aln,"clustal")
+print(type(alignment))
+
+
+
+from Bio.Phylo.TreeConstruction import DistanceCalculator 
+calculator = DistanceCalculator('identity')
+
+
+# distance matrix is a square matrix of distances between all pairs of sequences in the alignment 
+distance_matrix = calculator.get_distance(alignment)
+print(distance_matrix) # print the matrix
+
+
+from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
+constructor = DistanceTreeConstructor(calculator)
+
+
+shark_tree = constructor.build_tree(alignment)
+shark_tree.rooted = True
+print(shark_tree)
+
+
+Phylo.write(shark_tree, "shark_tree.xml", "phyloxml")
+
+
+
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+fig = plt.figure(figsize=(13, 5), dpi=100) # create figure & set the size 
+matplotlib.rc('font', size=12)              # fontsize of the leaf and node labels 
+matplotlib.rc('xtick', labelsize=10)       # fontsize of the tick labels
+matplotlib.rc('ytick', labelsize=10)       # fontsize of the tick labels
+#turtle_tree.ladderize()
+axes = fig.add_subplot(1, 1, 1)
+Phylo.draw(shark_tree, axes=axes)
+#plt.savefig(output_file)
+
+
+
+Phylo.draw_ascii(shark_tree, file=None, column_width=80)
+
+
+# for saving the figure
+fig.savefig("shark_cladogram", dpi=100, bbox_inches='tight')
